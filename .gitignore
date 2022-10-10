@@ -1,0 +1,5 @@
+.vagrant
+.ssh
+.ansible
+.bash_history
+
