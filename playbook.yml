@@ -22,16 +22,16 @@
           - git
         state: present
       delegate_to: localhost 
+    - name: create user ansible
+      user:
+        name: ansible
+        state: present
     - name: set .vimrc
       copy:
         dest: /home/ansible/.vimrc
         content: |
           set number hlsearch ai et sw=2 ts=2 
           syntax on
-    - name: create user ansible
-      user:
-        name: ansible
-        state: present
     - name: ensure /home/ansible/.ssh
       file:
         path: /home/ansible/.ssh
