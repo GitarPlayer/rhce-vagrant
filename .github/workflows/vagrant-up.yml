@@ -1,6 +1,9 @@
 name: vagrant-up
 
-on: [push]
+on: 
+  push:
+  schedule:
+    - cron: "0 0 * * 5" # run every Friday at 00:00
 
 jobs:
   vagrant-up:
@@ -23,5 +26,5 @@ jobs:
       - name: Run vagrant up
         run: vagrant up
 
-      - name: ssh into box after boot
-        run: vagrant ssh -c "ansible all -i /home/vagrant/ansible/inventory -m ping -b"
+      - name: verify ansible lab works as expected
+        run: vagrant ssh controller -c "ansible all -i /home/vagrant/ansible/inventory -m ping -b -u ansible"
