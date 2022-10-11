@@ -27,4 +27,4 @@ jobs:
         run: vagrant up
 
       - name: verify ansible lab works as expected
-        run: vagrant ssh controller -c "ansible all -i /home/vagrant/ansible/inventory -m ping -b -u ansible"
+        run: vagrant ssh control -c "sudo -u ansible bash -c 'ansible nodes -m ping -b -u ansible'"

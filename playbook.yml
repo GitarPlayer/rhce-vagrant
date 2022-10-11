@@ -3,23 +3,22 @@
   hosts: all
   become: yes
   remote_user: vagrant
+  vars:
+    packages: 
+      - tmux
+      - vim
+      - git
   tasks:
     - name: Populate hostfiles
       lineinfile:
         path: /etc/hosts
-        line: "{{ hostvars[item]['ansible_all_ipv4_addresses'][1] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
+        line: "{{ hostvars[item]['ansible_enp0s8']['ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
       delegate_to: localhost
-      loop: 
-        - ansible1
-        - ansible2
-        - ansible3
-      when: inventory_hostname == 'controller'
-    - name: install tmux
+      loop: "{{ groups['nodes'] }}"
+      when: inventory_hostname == 'control'
+    - name: install {{ packages }}
       yum:
-        name: 
-          - vim
-          - tmux
-          - git
+        name: "{{ packages }}"
         state: present
       delegate_to: localhost 
     - name: create user ansible
@@ -51,8 +50,8 @@
         repo: 'https://github.com/sandervanvugt/rhce8.git'
         dest: /home/ansible/rhce8
       delegate_to: localhost 
-      when: inventory_hostname == 'controller'
-    - name: ensure vagrant owner and group for repo
+      when: inventory_hostname == 'control'
+    - name: ensure ansible owner and group for repo
       file:
         path: /home/ansible/rhce8
         owner: ansible
@@ -60,28 +59,49 @@
         recurse: yes
         state: directory
       delegate_to: localhost
-      when: inventory_hostname == 'controller'
-    - name: regenerate pub key from controller private key
-      command: ssh-keygen -y -f /home/vagrant/ansible/.vagrant/machines/controller/virtualbox/private_key
+    - name: create ansible inventory
+      copy:
+        dest: /home/ansible/inventory
+        owner: ansible
+        group: ansible
+        content: |
+          [nodes]
+          {% for node in groups['nodes'] %}
+          {{ node }}
+          {% endfor %}
+      delegate_to: localhost
+      when: inventory_hostname == 'control'
+    - name: copy ansible.cfg to /home/ansible
+      copy:
+        src: /home/vagrant/ansible/ansible.cfg
+        dest: /home/ansible/.ansible.cfg
+        owner: ansible
+        group: ansible
+        remote_src: yes
+        mode: 0640
+      delegate_to: localhost
+      when: inventory_hostname == 'control'
+    - name: regenerate pub key from control private key
+      command: ssh-keygen -y -f /home/vagrant/ansible/.vagrant/machines/control/virtualbox/private_key
       register: public_key
       delegate_to: localhost
-      when: inventory_hostname == 'controller'
+      when: inventory_hostname == 'control'
     - name: move private_key to /home/ansible/.ssh/id_rsa
       copy:
-        src: /home/vagrant/ansible/.vagrant/machines/controller/virtualbox/private_key
+        src: /home/vagrant/ansible/.vagrant/machines/control/virtualbox/private_key
         dest: /home/ansible/.ssh/id_rsa
         mode: 0600
         owner: ansible
         group: ansible
       delegate_to: localhost
-      when: inventory_hostname == 'controller'
+      when: inventory_hostname == 'control'
     - name: debug
       debug:
-        var: hostvars['controller'].public_key.stdout
+        var: hostvars['control'].public_key.stdout
     - name: add id_rsa.pub to authorized_keys file of nodes
       authorized_key:
         user: ansible
-        key: "{{ hostvars['controller'].public_key.stdout }}"
+        key: "{{ hostvars['control'].public_key.stdout }}"
         state: present
     - name: Set hostname to inventory_hostname
       hostname: 
@@ -92,4 +112,4 @@
       when: hostname.changed and inventory_hostname in groups['nodes']
     - name: command
       command: shutdown -r 0
-      when: hostname.changed and inventory_hostname == 'controller'
+      when: hostname.changed and inventory_hostname == 'control'
