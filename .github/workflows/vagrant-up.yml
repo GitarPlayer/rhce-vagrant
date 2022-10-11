@@ -2,6 +2,10 @@ name: vagrant-up
 
 on: 
   push:
+    paths:
+      paths-ignore:
+        - 'README.md'
+        - '.gitignore'
   schedule:
     - cron: "0 0 * * 5" # run every Friday at 00:00
 
