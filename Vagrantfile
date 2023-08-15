@@ -11,7 +11,7 @@ CONTROL_IPv4 = "192.168.56.14"
 
 Vagrant.configure("2") do |config|
  
-    config.vm.box = "almalinux/8"
+    config.vm.box = "generic/rhel9"
     config.vm.boot_timeout = 600
    
     config.vm.define "ansible1" do |machine|
@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
       machine.vm.hostname == "control"
       # install ansible 2.9
       machine.vm.provision "shell",
-        inline: "dnf -y install centos-release-ansible-29 && dnf -y install ansible"
+        inline: "dnf -y install ansible"
       machine.vm.provision :ansible_local do |ansible|
         ansible.groups = {
           "nodes" => ["ansible[1:3]"]
