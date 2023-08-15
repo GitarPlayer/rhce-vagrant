@@ -7,7 +7,7 @@ CONTROL_IPv4 = "192.168.56.14"
 
 
 ### /configuration parameters ###
-
+# create 
 
 Vagrant.configure("2") do |config|
  
@@ -23,11 +23,7 @@ Vagrant.configure("2") do |config|
       machine.vm.network "private_network", ip: ANSIBLE2_IPv4
       machine.vm.hostname == "ansible2"
     end
-  
-    config.vm.define "ansible3" do |machine|
-      machine.vm.network "private_network", ip: ANSIBLE3_IPv4
-      machine.vm.hostname == "ansible3"
-    end
+
    
     config.vm.define 'control' do |machine|
       machine.vm.network "private_network", ip: CONTROL_IPv4
@@ -38,15 +34,13 @@ Vagrant.configure("2") do |config|
         inline: "dnf -y install ansible"
       machine.vm.provision :ansible_local do |ansible|
         ansible.groups = {
-          "nodes" => ["ansible[1:3]"]
+          "nodes" => ["ansible[1:2]"]
         }
         ansible.host_vars = {
           "ansible1" => {"ansible_host" => ANSIBLE1_IPv4,
           "ansible_ssh_private_key_file" => "/home/vagrant/ansible/.vagrant/machines/ansible1/virtualbox/private_key"},
           "ansible2" => {"ansible_host" => ANSIBLE2_IPv4,
           "ansible_ssh_private_key_file" => "/home/vagrant/ansible/.vagrant/machines/ansible2/virtualbox/private_key"},
-          "ansible3" => {"ansible_host" => ANSIBLE3_IPv4,
-          "ansible_ssh_private_key_file" => "/home/vagrant/ansible/.vagrant/machines/ansible3/virtualbox/private_key"}
         }
         ansible.playbook               = "playbook.yml"
         ansible.provisioning_path      = "/home/vagrant/ansible"
