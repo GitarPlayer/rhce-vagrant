@@ -13,10 +13,14 @@ Vagrant.configure("2") do |config|
  
     config.vm.box = "generic/rhel9"
     config.vm.boot_timeout = 600
+    config.trigger.before :destroy do
+     run "subscription-manager remove --all && subscription-manager unregister && subscription-manager clean"
+    end
    
     config.vm.define "ansible1" do |machine|
       machine.vm.network "private_network", ip: ANSIBLE1_IPv4
       machine.vm.hostname == "ansible1"
+  
     end
    
     config.vm.define "ansible2" do |machine|
@@ -31,7 +35,7 @@ Vagrant.configure("2") do |config|
       machine.vm.hostname == "control"
       # install ansible 2.9
       machine.vm.provision "shell",
-        inline: "dnf -y install ansible"
+        inline: "subscription-manager register --org=$ORG_ID --activationkey=$ACTIVATION_KEY && dnf -y install ansible"
       machine.vm.provision :ansible_local do |ansible|
         ansible.groups = {
           "nodes" => ["ansible[1:2]"]
