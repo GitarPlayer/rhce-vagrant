@@ -10,7 +10,7 @@ on:
 
 jobs:
   vagrant-up:
-    runs-on: macos-latest
+    runs-on: macos10.15
 
     steps:
       - uses: actions/checkout@v2
