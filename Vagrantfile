@@ -13,6 +13,7 @@ Vagrant.configure("2") do |config|
  
     config.vm.box = "generic/rhel9"
     config.vm.boot_timeout = 600
+    # use vagrant trigger to unregister before destroy
     config.trigger.before :destroy do
      run "subscription-manager remove --all && subscription-manager unregister && subscription-manager clean"
     end
