@@ -10,23 +10,31 @@ CONTROL_IPv4 = "192.168.56.14"
 # create 
 
 Vagrant.configure("2") do |config|
- 
+
     config.vm.box = "generic/rhel9"
     config.vm.boot_timeout = 600
     # use vagrant trigger to unregister before destroy
-    config.trigger.before :destroy do
-     run "subscription-manager remove --all && subscription-manager unregister && subscription-manager clean"
+    config.trigger.before :destroy do |trigger|
+      trigger.run_remote = {inline: "bash -c '/usr/bin/subscription-manager remove --all && /usr/bin/subscription-manager unregister && /usr/bin/subscription-manager clean || true'"} 
     end
-   
+  
+    config.trigger.before :provision do |trigger|
+      org = ENV['org']
+      activationkey = ENV['activationkey']
+      trigger.run_remote = {inline: "bash -c 'subscription-manager unregister || subscription-manager register --org=#{org} --activationkey=#{activationkey}'"} 
+    end
+  
+
     config.vm.define "ansible1" do |machine|
       machine.vm.network "private_network", ip: ANSIBLE1_IPv4
       machine.vm.hostname == "ansible1"
-  
+      machine.vm.provider :virtualbox
     end
    
     config.vm.define "ansible2" do |machine|
       machine.vm.network "private_network", ip: ANSIBLE2_IPv4
       machine.vm.hostname == "ansible2"
+      machine.vm.provider :virtualbox
     end
 
    
@@ -34,9 +42,12 @@ Vagrant.configure("2") do |config|
       machine.vm.network "private_network", ip: CONTROL_IPv4
       machine.vm.synced_folder ".", "/home/vagrant/ansible", create: true, mount_options: ["dmode=750,fmode=600"]
       machine.vm.hostname == "control"
+      machine.vm.provider :virtualbox
+      org = ENV['org']
+      activationkey = ENV['activationkey']
       # install ansible 2.9
       machine.vm.provision "shell",
-        inline: "subscription-manager register --org=$ORG_ID --activationkey=$ACTIVATION_KEY && dnf -y install ansible"
+        inline: "subscription-manager unregister || subscription-manager register --org=#{org} --activationkey=#{activationkey} && dnf -y install ansible"
       machine.vm.provision :ansible_local do |ansible|
         ansible.groups = {
           "nodes" => ["ansible[1:2]"]

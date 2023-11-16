@@ -12,15 +12,10 @@
     - name: Populate hostfiles
       lineinfile:
         path: /etc/hosts
-        line: "{{ hostvars[item]['ansible_enp0s8']['ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
+        line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
       delegate_to: localhost
       loop: "{{ groups['nodes'] }}"
       when: inventory_hostname == 'control'
-    - name: install {{ packages }}
-      yum:
-        name: "{{ packages }}"
-        state: present
-      delegate_to: localhost 
     - name: create user ansible
       user:
         name: ansible
@@ -45,20 +40,6 @@
         owner: root
         group: root
         content: "ansible ALL=(ALL) NOPASSWD: ALL"
-    - name: clone learning repo
-      git:
-        repo: 'https://github.com/sandervanvugt/rhce8.git'
-        dest: /home/ansible/rhce8
-      delegate_to: localhost 
-      when: inventory_hostname == 'control'
-    - name: ensure ansible owner and group for repo
-      file:
-        path: /home/ansible/rhce8
-        owner: ansible
-        group: ansible
-        recurse: yes
-        state: directory
-      delegate_to: localhost
     - name: create ansible inventory
       copy:
         dest: /home/ansible/inventory
