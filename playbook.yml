@@ -9,10 +9,15 @@
       - vim
       - git
   tasks:
+    - name: debug
+      debug:
+        msg: "{{ hostvars[item]['ansible_facts']}}"
+      loop: "{{ groups['nodes'] }}"
+      when: inventory_hostname == 'control'
     - name: Populate hostfiles
       lineinfile:
         path: /etc/hosts
-        line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
+        line: "{{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"
       delegate_to: localhost
       loop: "{{ groups['nodes'] }}"
       when: inventory_hostname == 'control'
@@ -54,7 +59,7 @@
       when: inventory_hostname == 'control'
     - name: copy ansible.cfg to /home/ansible
       copy:
-        src: /home/vagrant/ansible/ansible.cfg
+        src: /vagrant/ansible.cfg
         dest: /home/ansible/.ansible.cfg
         owner: ansible
         group: ansible
@@ -63,13 +68,13 @@
       delegate_to: localhost
       when: inventory_hostname == 'control'
     - name: regenerate pub key from control private key
-      command: ssh-keygen -y -f /home/vagrant/ansible/.vagrant/machines/control/virtualbox/private_key
+      command: ssh-keygen -y -f /vagrant/.vagrant/machines/control/virtualbox/private_key
       register: public_key
       delegate_to: localhost
       when: inventory_hostname == 'control'
     - name: move private_key to /home/ansible/.ssh/id_rsa
       copy:
-        src: /home/vagrant/ansible/.vagrant/machines/control/virtualbox/private_key
+        src: /vagrant/.vagrant/machines/control/virtualbox/private_key
         dest: /home/ansible/.ssh/id_rsa
         mode: 0600
         owner: ansible
