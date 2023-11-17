@@ -9,12 +9,7 @@
       - vim
       - git
   tasks:
-    - name: debug
-      debug:
-        msg: "{{ hostvars[item]['ansible_facts']}}"
-      loop: "{{ groups['nodes'] }}"
-      when: inventory_hostname == 'control'
-    - name: Populate hostfiles
+    - name: Populate hostfiles for control
       lineinfile:
         path: /etc/hosts
         line: "{{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }} {{ hostvars[item]['inventory_hostname'] }} {{ hostvars[item]['inventory_hostname'] }}.example.com"

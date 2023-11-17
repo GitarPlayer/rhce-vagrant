@@ -5,7 +5,7 @@ Please get a Red Hat developer subscription here: https://developers.redhat.com/
 Then create an activation key and export the org and activationkey variable.
 
 ## Dependencies
-We need vagrant, virtualbox and the vagrant plugin `vagrant-vbguest `. I need vagrant-vbguest since the shared folder will not work if the Virtual Guest additions are not in sync with the virtualbox version in use. One cannot use the file provisioner, since it will attempt to copy files that are not there yet (the ssh private_key that gets generated and vagrant ssh uses).
+We need vagrant, virtualbox and the vagrant plugin `vagrant-vbguest `. I need vagrant-vbguest since the shared folder will not work if the Virtual Guest additions are not in sync with the virtualbox version in use. One cannot use the file provisioner, since it will attempt to copy files that are not there yet (the ssh private_key that gets generated and vagrant ssh uses). 
 
 You can install the dependencies like so with choco:
 ```Powershell
@@ -16,6 +16,9 @@ Tested versions:
 Vagrant 2.4.0 
 virtualbox v7.0.6.20230201
 vagrant-vbguest (0.31.0)
+
+## Recommendation
+If you are working from a Windows vagrant host I would go for Windows Terminal. 
 
 ## Usage MacOs *Nix
 ```bash
